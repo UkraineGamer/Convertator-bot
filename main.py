@@ -27,7 +27,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def main_choice_handler():
     bot_ui.first_choice()
-    await conversion_handler()
+    await conversion_handler(Update, ContextTypes.DEFAULT_TYPE)
 
 async def conversion_handler(update:Update, context:ContextTypes.DEFAULT_TYPE):
     conversion_type = str(bot_ui.output)
@@ -39,7 +39,7 @@ async def conversion_handler(update:Update, context:ContextTypes.DEFAULT_TYPE):
     elif conversion_type == "image":
         bot_ui.if_image()
     else:
-        await message.reply_text("Non exitent option chosen")
+        await update.message.reply_text("Non exitent option chosen")
 
     await update.message.reply_text(f"send a {conversion_type} file to convert")
     message = update.message
@@ -85,7 +85,7 @@ def main():
         raise SystemExit("No bot token provided")
     
     app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(MessageHandler(filters.PHOTO|filters.VIDEO|filters.AUDIO, ))
+    #app.add_handler(MessageHandler(filters.PHOTO|filters.VIDEO|filters.AUDIO, ))
     app.add_handler(CommandHandler("start", start))
 
     print("Bot is up and running!")
