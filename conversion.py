@@ -12,28 +12,28 @@ class Conversion:
         self.input_file = input_file
         self.output_file = output_file
 
-    def convert_video_extension(self, extension_to_convert_to):
+    def convert_video_extension(self):
         subprocess.run([
             "ffmpeg",
             "-i", self.input_file,
             "-c:v", "libx264",
             "-c:a", "aac",
-            f"{self.output_file}.{extension_to_convert_to}",
+            f"{self.output_file}",
         ])
 
-    def convert_image_extension(self, extension_to_convert_to):
+    def convert_image_extension(self):
         subprocess.run([
             "ffmpeg",
             "-i", self.input_file,
-            f"{self.output_file}.{extension_to_convert_to}",
+            f"{self.output_file}",
         ])
 
-    def convert_audio_extension(self, extension_to_convert_to):
+    def convert_audio_extension(self):
         subprocess.run([
             "ffmpeg",
             "-i", self.input_file,
             "-c:a", "libmp3lame",
-            f"{self.output_file}.{extension_to_convert_to}",
+            f"{self.output_file}",
         ])
 
     def change_video_quality(self, quality):
