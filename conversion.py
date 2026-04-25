@@ -1,7 +1,4 @@
-import ffmpeg
-import os
 import subprocess
-from pathlib import Path
 
 video_formats = {".mov", ".mp4", ".mkv", ".webm", ".avi", ".m4v", ".flv", ".wmv", ".mts", ".m2ts"}
 image_formats = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff", ".heic", "heif"}
@@ -14,19 +11,19 @@ class Conversion:
 
     def convert_video_extension(self):
         subprocess.run([
-            "ffmpeg",
+            "ffmpeg", 
             "-i", self.input_file,
             "-c:v", "libx264",
             "-c:a", "aac",
             f"{self.output_file}",
-        ])
+        ], check=True)
 
     def convert_image_extension(self):
         subprocess.run([
             "ffmpeg",
             "-i", self.input_file,
             f"{self.output_file}",
-        ])
+        ], check=True)
 
     def convert_audio_extension(self):
         subprocess.run([
@@ -34,21 +31,5 @@ class Conversion:
             "-i", self.input_file,
             "-c:a", "libmp3lame",
             f"{self.output_file}",
-        ])
-
-    def change_video_quality(self, quality):
-        subprocess.run([
-            "ffmpeg",
-            "-i", self.input_file,
-            "-crf", quality,
-            self.output_file,
-        ])
-
-    def change_image_quality(self, quality):
-        subprocess.run([
-            "ffmpeg",
-            "-i", self.input_file,
-            "-q:v", quality,
-            self.output_file,
-        ])
+        ], check=True)
 
