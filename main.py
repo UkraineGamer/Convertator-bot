@@ -24,11 +24,18 @@ async def language_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     language_choice()
-    await update.message.reply_text("Hello, I will assist you with conversion of your files!")
-    await update.message.reply_text("Please notice that the files that you convert are not stored on the external device after conversion.")
+    if bot_ui.language_chosen == 'ENG':
+        await update.message.reply_text("Hello, I will assist you with conversion of your files!")
+        await update.message.reply_text("Please notice that the files that you convert are not stored on the external device after conversion.")
+    elif bot_ui.language_chosen == 'UA':
+        await update.message.reply_text("Привіт, я допоможу тобі з конвертуванням твоїх файлів!")
+        await update.message.reply_text("Зауважте що ваші файли не будуть збережені на зовнішньому пристрої.")
     bot_ui.output_clear()
     keyboard = bot_ui.first_choice(InlineKeyboardButton, InlineKeyboardMarkup)
-    await update.message.reply_text("Please choose what you want to convert:", reply_markup=keyboard)
+    if bot_ui.language_chosen == 'ENG':
+        await update.message.reply_text("Please choose what you want to convert:", reply_markup=keyboard)
+    elif bot_ui.language_chosen == 'UA':
+        await update.message.reply_text("Будьласка оберіть який тип файлу ви хочете конвертувати:", reply_markup=keyboard)
 
 
 async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -40,18 +47,29 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if data.startswith("type:"):
         conversion_type = data.split(":", maxsplit=1)[1]
         keyboard = bot_ui.extension_choice(conversion_type, InlineKeyboardButton, InlineKeyboardMarkup)
-        await query.edit_message_text(
-            text="Please choose the extension you want to convert to",
-            reply_markup=keyboard,
-        )
+        if bot_ui.language_chosen == 'ENG':
+            await query.edit_message_text(
+                text="Please choose the extension you want to convert to",
+                reply_markup=keyboard,
+            )
+        elif bot_ui.language_chosen == 'UA':
+            await query.edit_message_text(
+                text="Будьласка оберіть за яким розширенням ви хочете зробити конвертування",
+                reply_markup=keyboard,
+            )
         return
 
     if data.startswith("ext:"):
         target_ext = data.split(":", maxsplit=1)[1]
         bot_ui.set_extension(target_ext)
-        await query.edit_message_text(
-            text=f"Send a {bot_ui.conversion_type} file to convert to {bot_ui.output}"
-        )
+        if bot_ui.language_chosen == 'ENG':
+            await query.edit_message_text(
+                text=f"Send a {bot_ui.conversion_type} file to convert to {bot_ui.output}"
+            )
+        elif bot_ui.language_chosen == 'UA':
+            await query.edit_message_text(
+                text=f"Відправ {bot_ui.conversion_type} файл для конвертування {bot_ui.output}"
+            )
     
     if data.startwith("lang:"):
         language_option = data.split(":", maxsplit=1)[1]
@@ -64,7 +82,10 @@ async def conversion_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
     conversion_type = bot_ui.conversion_type
     target_ext = bot_ui.output
     if not conversion_type or not target_ext:
-        await update.message.reply_text("Please run /start and choose conversion options first.")
+        if bot_ui.language_chosen == 'ENG':
+            await update.message.reply_text("Please run /start and choose conversion options first.")
+        elif bot_ui.language_chosen == 'UA':
+            await update.message.reply_text("Будьласка спочатку напишіть /start та оберіть розширення конвертування.")
         return
 
     message = update.message
