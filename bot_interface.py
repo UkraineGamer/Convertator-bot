@@ -2,6 +2,7 @@ class Bot_interface:
     def __init__(self):
         self.conversion_type = ""
         self.output = ""
+        self.language_chosen = ""
 
     def first_choice(self, for_inline_keyboard_button, for_inline_keyboard_markup):
         keyboard = for_inline_keyboard_markup([
@@ -57,3 +58,13 @@ class Bot_interface:
     def output_clear(self):
         self.output = ""
         self.conversion_type = ""
+
+    def language_choice(self, for_inline_keyboard_button, for_inline_keyboard_markup):
+        keyboard = for_inline_keyboard_markup([[
+            for_inline_keyboard_button("ENG", callback_data = "ENG")
+            for_inline_keyboard_button("UA", callback_data = "UA")
+        ]])
+        return keyboard
+    
+    def language_in_use(self, language):
+        self.language_chosen = language

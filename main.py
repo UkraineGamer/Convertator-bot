@@ -16,6 +16,11 @@ BOT_TOKEN = "8789621071:AAGwxRv28i9aellHi9Q9ZF3SFR4swc0oESE"
 bot_ui = bot_interface.Bot_interface()
 download_directory = os.getenv("DOWNLOAD_DIRECTORY", "tmp_downloads")
 
+async def language_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = bot_ui.language_choice(InlineKeyboardButton, InlineKeyboardMarkup)
+    await update.message.reply_text("chose a language", reply_markup = keyboard)
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("Hello, I will assist you with conversion of your files!")
     await update.message.reply_text("Please notice that the files that you convert are not stored on the external device after conversion.")
