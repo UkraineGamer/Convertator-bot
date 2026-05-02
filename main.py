@@ -18,31 +18,37 @@ download_directory = os.getenv("DOWNLOAD_DIRECTORY", "tmp_downloads")
 
 async def language_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = bot_ui.language_choice(InlineKeyboardButton, InlineKeyboardMarkup)
-    await update.message.reply_text("choose a language", reply_markup = keyboard)
-
-
+    await update.message.reply_text("Choose a language", reply_markup = keyboard)
+    
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    language_choice()
+    await language_choice(update, context)
+
+
+async def first_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = update.message if update.message else update.callback_query.message
+
     if bot_ui.language_chosen == 'ENG':
-        await update.message.reply_text("Hello, I will assist you with conversion of your files!")
-        await update.message.reply_text("Please notice that the files that you convert are not stored on the external device after conversion.")
+            await message.reply_text("Hello, I will assist you with conversion of your files!")
+            await message.reply_text("Please notice that the files that you convert are not stored on the external device after conversion.")
     elif bot_ui.language_chosen == 'UA':
-        await update.message.reply_text("Привіт, я допоможу тобі з конвертуванням твоїх файлів!")
-        await update.message.reply_text("Зауважте що ваші файли не будуть збережені на зовнішньому пристрої.")
+            await message.reply_text("Привіт, я допоможу тобі з конвертуванням твоїх файлів!")
+            await message.reply_text("Зауважте що ваші файли не будуть збережені на зовнішньому пристрої.")
+
     bot_ui.output_clear()
+
     keyboard = bot_ui.first_choice(InlineKeyboardButton, InlineKeyboardMarkup)
+
     if bot_ui.language_chosen == 'ENG':
-        await update.message.reply_text("Please choose what you want to convert:", reply_markup=keyboard)
+        await message.reply_text("Please choose what you want to convert:", reply_markup=keyboard)
     elif bot_ui.language_chosen == 'UA':
-        await update.message.reply_text("Будьласка оберіть який тип файлу ви хочете конвертувати:", reply_markup=keyboard)
+        await message.reply_text("Будьласка оберіть який тип файлу ви хочете конвертувати:", reply_markup=keyboard)
 
 
 async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
     await query.answer()
     data = query.data or ""
-
 
     if data.startswith("type:"):
         conversion_type = data.split(":", maxsplit=1)[1]
@@ -71,11 +77,10 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 text=f"Відправ {bot_ui.conversion_type} файл для конвертування {bot_ui.output}"
             )
     
-    if data.startwith("lang:"):
+    if data.startswith("lang:"):
         language_option = data.split(":", maxsplit=1)[1]
-        bot_ui.language_chosen(language_option)
-
-
+        bot_ui.language_in_use(language_option)
+        await first_choice(update, context)
 
 
 async def conversion_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -103,7 +108,10 @@ async def conversion_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         filename = "photo.jpg"
 
     if not tg_media:
-        await update.message.reply_text("Send a supported file: video, audio, or photo.")
+        if bot_ui.language_chosen == 'ENG':
+            await update.message.reply_text("Send a supported file: video, audio, or photo.")
+        elif bot_ui.language_chosen == 'UA':
+            await update.message.reply_text("Відправ підтримуваний файл: відео, аудіо, або фото.")
         return
 
     if not filename:
@@ -115,7 +123,10 @@ async def conversion_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     telegram_file = await context.bot.get_file(tg_media.file_id)
     await telegram_file.download_to_drive(inputpath)
-    await update.message.reply_text("File downloaded, converting...")
+    if bot_ui.language_chosen == 'ENG':
+        await update.message.reply_text("File downloaded, converting...")
+    elif bot_ui.language_chosen == 'UA':
+        await update.message.reply_text("Файл завантажено, конвертую...")
 
     try:
         conv = conversion.Conversion(inputpath, outputpath)
@@ -127,13 +138,21 @@ async def conversion_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
         elif conversion_type == "image":
             conv.convert_image_extension()
         else:
-            await update.message.reply_text("Unsupported conversion type selected.")
+            if bot_ui.language_chosen == 'ENG':
+                await update.message.reply_text("Unsupported conversion type selected.")
+            elif bot_ui.language_chosen == 'UA':
+                await update.message.reply_text("Непідтримуваний тип конвертування вибрано.")
             return
 
         with open(outputpath, "rb") as converted_file:
             await update.message.reply_document(converted_file)
-        await update.message.reply_text("Converted and sent")
+        if bot_ui.language_chosen == 'ENG':
+            await update.message.reply_text("Converted and sent")
+        elif bot_ui.language_chosen == 'UA':
+            await update.message.reply_text("Конвертовано і відправлено")
         bot_ui.output_clear()
+        bot_ui.language_clear()
+
     except (subprocess.CalledProcessError, FileNotFoundError):
         await update.message.reply_text("Conversion failed")
     finally:
